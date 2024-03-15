@@ -7,6 +7,8 @@ on:
 jobs:
   format-build:
     runs-on: ubuntu-latest
+    env:
+      IDS_HOST: https://test-install-determinate-systems.fly.dev/
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action-priv@diag
