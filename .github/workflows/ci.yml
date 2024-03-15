@@ -11,7 +11,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action-priv@diag
       - uses: DeterminateSystems/magic-nix-cache-action-priv@diag
-      - uses: DeterminateSystems/flake-checker-action-priv@diag
       - name: Check rustfmt
         run: nix develop --command cargo fmt -- --check
       - run: nix build -L
