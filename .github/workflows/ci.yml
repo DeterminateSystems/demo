@@ -25,7 +25,7 @@ jobs:
           flakehub: true
       - uses: DeterminateSystems/magic-nix-cache-action@main
         with:
-          source-revision: f13fa9e9f338fd4558ef9237848bc2e6436775b7
+          source-revision: 949fc954a54e806d971be0eac48b58911bac2cdb
           use-gha-cache: false
       - run: nix build .#nixosConfigurations.ethercalc-demo.config.system.build.toplevel
       - uses: "DeterminateSystems/flakehub-push@main"
