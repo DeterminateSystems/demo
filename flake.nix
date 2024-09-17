@@ -15,10 +15,10 @@
                     ];
                 })
                 ({ pkgs, ... }: {
-                    networking.firewall.allowedTCPPorts = [ 80 ];
+                    networking.firewall.allowedTCPPorts = [ 8080 ];
                     services.ethercalc = {
                         enable = true;
-                        port = 80;
+                        port = 8080;
                     };
                 })
             ];
