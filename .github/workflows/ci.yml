@@ -27,6 +27,7 @@ jobs:
         with:
           source-revision: f13fa9e9f338fd4558ef9237848bc2e6436775b7
           use-gha-cache: false
+      - run: nix build .#nixosConfigurations.ethercalc-demo.config.system.build.toplevel
       - uses: "DeterminateSystems/flakehub-push@main"
         with:
           name: "DeterminateSystems/demo"
