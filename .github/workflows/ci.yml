@@ -13,10 +13,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  DeterminateCI:
-    uses: DeterminateSystems/ci/.github/workflows/workflow.yml@main
+  BuildPublish:
+    runs-on: ubuntu-latest
     permissions:
       id-token: "write"
       contents: "read"
-    with:
-      visibility: private
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+        with:
+          flakehub: true
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          source-revision: f13fa9e9f338fd4558ef9237848bc2e6436775b7
+          use-gha-cache: false
+      - uses: "DeterminateSystems/flakehub-push@main"
+        with:
+          name: "DeterminateSystems/demo"
+          rolling: true
+          visibility: "private"
+          include-output-paths: true
