@@ -34,6 +34,7 @@
                 })
                 ({ pkgs, ... }: {
                     networking.firewall.allowedTCPPorts = [ 80 ];
+                    systemd.services.ethercalc.serviceConfig.AmbientCapabilities = CAP_NET_BIND_SERVICE;
                     services.ethercalc = {
                         enable = true;
                         port = 80;
