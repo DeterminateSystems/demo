@@ -34,3 +34,24 @@ jobs:
           rolling: true
           visibility: "private"
           include-output-paths: true
+
+  Deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: BuildPublish
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: "write"
+      contents: "read"
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-2
+          role-to-assume: arn:aws:iam::821540176543:role/github-actions/DeployEthercalc
+      - name: Deploy Ethercalc
+        run: |
+          aws ssm send-command \
+              --region us-east-2 \
+              --targets Key=tag:Application,Values=Ethercalc \
+              --document-name "FlakeHub-ApplyNixOS" \
+              --parameters flakeref="DeterminateSystems/demo/0#nixosConfigurations.ethercalc-demo"

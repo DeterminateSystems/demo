@@ -48,6 +48,7 @@
             name = "demo-shell";
             buildInputs = with pkgs; [
               opentofu
+              awscli2
             ];
           };
         });
