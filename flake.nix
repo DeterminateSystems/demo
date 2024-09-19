@@ -27,6 +27,10 @@
                     ];
 
                     services.amazon-ssm-agent.enable = true;
+                    systemd.services.amazon-ssm-agent.path = [
+                        "/run/wrappers"
+                        "/run/current-system/sw"
+                     ];
                 })
                 ({ pkgs, ... }: {
                     networking.firewall.allowedTCPPorts = [ 8080 ];
