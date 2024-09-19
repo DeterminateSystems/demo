@@ -47,7 +47,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-east-2
-          role-to-assume: arn:aws:iam::194722411868:role/github-actions/DeployEthercalc
+          role-to-assume: arn:aws:iam::194722411868:role/github-actions/FlakeHubDeployDemo
       - name: Deploy Ethercalc
         run: |
           aws ssm send-command \
