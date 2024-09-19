@@ -35,7 +35,7 @@
                 ({ pkgs, ... }: {
                     networking.firewall.allowedTCPPorts = [ 8080 ];
                     services.ethercalc = {
-                        enable = true;
+                        enable = false;
                         port = 8080;
                     };
                 })
