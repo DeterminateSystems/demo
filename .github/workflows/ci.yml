@@ -55,3 +55,9 @@ jobs:
               --targets Key=tag:Application,Values=Ethercalc \
               --document-name "FlakeHub-ApplyNixOS" \
               --parameters flakeref="DeterminateSystems/demo/0#nixosConfigurations.ethercalc-demo"
+      - name: Breakpoint if tests failed
+        if: failure()
+        uses: namespacelabs/breakpoint-action@v0
+        with:
+          duration: 30m
+          authorized-users: grahamc
