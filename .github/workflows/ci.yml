@@ -52,7 +52,7 @@ jobs:
         run: |
           aws ssm send-command \
               --region us-east-2 \
-              --targets Key=tag:Application,Values=Ethercalc \
+              --targets Key=tag:Name,Values=FlakeHubDemo \
               --document-name "FlakeHub-ApplyNixOS" \
               --parameters flakeref="DeterminateSystems/demo/0#nixosConfigurations.ethercalc-demo"
       - name: Breakpoint if tests failed
