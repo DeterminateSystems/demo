@@ -13,6 +13,8 @@
                     environment.systemPackages = [
                         fh.packages."${pkgs.stdenv.system}".default
                     ];
+
+                    services.amazon-ssm-agent.enable = true;
                 })
                 ({ pkgs, ... }: {
                     networking.firewall.allowedTCPPorts = [ 8080 ];
