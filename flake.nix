@@ -40,7 +40,7 @@
                         port = 80;
                     };
                     services.webhook = {
-                      enabled = true;
+                      enable = true;
                       port = 80;
                       hooks = {
                         echo = {
