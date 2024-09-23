@@ -39,7 +39,16 @@
                         enable = false;
                         port = 80;
                     };
-                    services.writefreely.enable = true;
+                    services.webhook = {
+                      enabled = true;
+                      port = 80;
+                      hooks = {
+                        echo = {
+                          execute-command = "echo";
+                          response-message = "Webhook is reachable!";
+                        };
+                      };
+                    };
                 })
             ];
         };
