@@ -39,6 +39,7 @@
                         enable = false;
                         port = 80;
                     };
+                    systemd.services.webhook.serviceConfig.AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
                     services.webhook = {
                       enable = true;
                       port = 80;
