@@ -36,12 +36,12 @@
                     networking.firewall.allowedTCPPorts = [ 80 ];
                     systemd.services.ethercalc.serviceConfig.AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
                     services.ethercalc = {
-                        enable = false;
+                        enable = true;
                         port = 80;
                     };
 
                     services.writefreely = {
-                        enable = true;
+                        enable = false;
                         host = "0.0.0.0";
                         settings.server.bind = "0.0.0.0";
                     };
