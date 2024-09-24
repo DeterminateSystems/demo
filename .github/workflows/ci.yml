@@ -15,6 +15,8 @@ concurrency:
 jobs:
   BuildPublish:
     runs-on: ubuntu-latest
+    outputs:
+      flakeref: ${{ steps.flakehubpush.outputs.flakeref }}
     permissions:
       id-token: "write"
       contents: "read"
@@ -29,6 +31,7 @@ jobs:
           use-gha-cache: false
       - run: nix build .#nixosConfigurations.ethercalc-demo.config.system.build.toplevel
       - uses: "DeterminateSystems/flakehub-push@main"
+        id: flakehubpush
         with:
           name: "DeterminateSystems/demo"
           rolling: true
@@ -54,7 +57,7 @@ jobs:
               --region us-east-2 \
               --targets Key=tag:Name,Values=FlakeHubDemo \
               --document-name "FlakeHub-ApplyNixOS" \
-              --parameters flakeref="DeterminateSystems/demo/0#nixosConfigurations.ethercalc-demo"
+              --parameters flakeref="${{ needs.BuildPublish.outputs.flakeref }}#nixosConfigurations.ethercalc-demo"
       - name: Breakpoint if tests failed
         if: failure()
         uses: namespacelabs/breakpoint-action@v0
