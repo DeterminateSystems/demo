@@ -37,7 +37,12 @@
                     systemd.services.ethercalc.serviceConfig.AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
                     services.ethercalc = {
                         enable = true;
-                        port = 80;
+                        port = 81;
+                    };
+
+                    services.writefreely = {
+                        enable = true;
+                        host = "localhost";
                     };
                 })
             ];
