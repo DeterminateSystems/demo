@@ -37,7 +37,7 @@ jobs:
           rolling: true
           visibility: "private"
           include-output-paths: true
-          source-revision: e0b268807af73d9e85608b72fe29887d068c7ede
+          source-revision: 8a2eb3450e068c63decc3b9a2fe35dbd954f6152
 
   Deploy:
     if: github.ref == 'refs/heads/main'
