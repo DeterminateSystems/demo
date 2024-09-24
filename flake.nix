@@ -43,6 +43,7 @@
                     services.writefreely = {
                         enable = true;
                         host = "0.0.0.0";
+                        settings.server.bind = "0.0.0.0";
                     };
                 })
             ];
