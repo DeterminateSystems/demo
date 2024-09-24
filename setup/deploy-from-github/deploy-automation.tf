@@ -13,7 +13,17 @@ resource "aws_ssm_document" "deploy" {
       flakeref = {
         type           = "String"
         description    = "The FlakeHub flake reference. Example: DeterminateSystems/demo/0.1#nixosConfigurations.ethercalc-demo"
-        allowedPattern = "^[a-zA-Z0-9\\-_]+\\/[a-zA-Z0-9\\-_]+\\/[a-zA-Z0-9\\-_.]+#([a-zA-Z0-9\\-_]+\\.?)+$"
+        allowedPattern = join("", [
+          # Owner/Flake/
+          "^[a-zA-Z0-9\\-_]+\\/[a-zA-Z0-9\\-_]+",
+          # /
+          "\\/",
+          # Version specifier
+          "[a-zA-Z0-9\\-_.+=~*]+",
+          # literal #
+          "#",
+          # attribute path
+          "([a-zA-Z0-9\\-_]+\\.?)+$"])
       }
     }
     mainSteps = [
