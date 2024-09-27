@@ -1,40 +1,40 @@
 # Continuous NixOS deployments to AWS - *in seconds* 🚀
 
-The project demonstrates how to continuously deploy a NixOS configuration to an AWS EC2 instance using Terraform and FlakeHub in seconds ️⏱️
+The project demonstrates how to continuously deploy a NixOS configuration to an AWS EC2 instance using Terraform and [FlakeHub](https://flakehub.com) _in seconds_ ️⏱️
 
-- The initial deployment completes in less than 60 seconds
-- Subsequent deployments take less than 10 seconds
+- **The initial deployment completes in _less than 60 seconds_**
+- **Subsequent deployments take _less than 10 seconds_**
 
-The deployment process involves fetching a pre-built NixOS closure from FlakeHub and applying it to the EC2 instance, streamlining the deployment process and ensuring consistency across deployments.
+The deployment process involves fetching a pre-built NixOS closure from [FlakeHub](https://flakehub.com) and applying it to the EC2 instance, streamlining the deployment process and ensuring consistency across deployments.
 
-## Sign-up for the FlakeHub Beta
+## Sign-up for the FlakeHub beta
 
-To experience this streamlined NixOS deployment pipeline for yourself, [sign up for the FlakeHub beta](https://determinate.systems/) at <https://determinate.systems/>.
+To experience this streamlined NixOS deployment pipeline for yourself, [**sign up for the FlakeHub beta**](https://determinate.systems/) at <https://determinate.systems/>.
 FlakeHub provides the enterprise-grade Nix infrastructure needed to fully leverage these advanced deployment techniques, ensuring a secure and efficient path from development to production.
 
 # Introduction
 
 This demonstration project consists of the following key components:
 
-- **Nix Flake Configuration**: A Nix flake configuration that defines the NixOS configuration for the deployment target.
-- **Terraform Configuration**: A Terraform configuration that sets up an AWS EC2 instance and deploys the NixOS configuration using FlakeHub.
-  - **User Data Script**: A script that runs on the EC2 instance to authenticate with FlakeHub and apply the NixOS configuration.
-- **GitHub Actions Workflow**: A GitHub Actions workflow that triggers the deployment process using Terraform and FlakeHub.
-  - **Triggering Rollbacks**: Demonstrates how to use the `workflow_dispatch` event to manually trigger a workflow run, enabling rollbacks to previous stable states.
+- **Nix Flake configuration**: A Nix flake configuration that defines the NixOS configuration for the deployment target.
+- **Terraform configuration**: A Terraform configuration that sets up an AWS EC2 instance and deploys the NixOS configuration using [FlakeHub](https://flakehub.com).
+  - **User Data script**: A script that runs on the EC2 instance to authenticate with [FlakeHub](https://flakehub.com) and apply the NixOS configuration.
+- **GitHub Actions workflow**: A GitHub Actions workflow that triggers the deployment process using Terraform and [FlakeHub](https://flakehub.com).
+  - **Triggering rollbacks**: Demonstrates how to use the `workflow_dispatch` event to manually trigger a workflow run, enabling rollbacks to previous stable states.
 
-## Nix Flake
+## Nix flake
 
 The `flake.nix` sets up a NixOS configuration with specific dependencies and system packages for the demo system.
 
 - **Inputs:** Specifies dependencies from external sources:
   - `nixpkgs`: Nixpkgs flake on FlakeHub.
   - `determinate`: Determinate flake on FlakeHub.
-  - `fh`: FlakeHub client flake on FlakeHub.
+  - `fh`: [FlakeHub client](https://github.com/determinatesystems/fh) flake on FlakeHub.
 - **Outputs:** Defines the outputs of the flake:
   - `nixosConfigurations.ethercalc-demo`: A NixOS configuration for the system.
   - Includes modules from `nixpkgs` and `determinate`.
   - Defines system packages, including a package from `fh`.
-  - Importantly, Amazon Simple Service Management (SSM) agent is included in the system packages
+  - Importantly, **Amazon Simple Service Management (SSM) agent is included** in the system packages
 
 ### Amazon Simple Service Management (SSM) Agent
 
@@ -65,7 +65,7 @@ Deploying NixOS AMIs using Amazon SSM agent from GitHub Actions offers several a
 
 By leveraging SSM and GitHub Actions, enterprises can create a more secure, compliant, and efficient deployment pipeline for NixOS AMIs, aligning with best practices for cloud operations and security.
 
-## Terraform Configuration
+## Terraform configuration
 
 The `main.tf` file is a Terraform configuration that sets up an AWS EC2 instance with the following components:
 
@@ -82,44 +82,37 @@ The `main.tf` file is a Terraform configuration that sets up an AWS EC2 instance
     - IAM instance profile `flakehub_client_machine`.
     - User data script for initialization.
 
-### User Data Script
+### User Data script
 
 The `user_data` portion in the aws_instance resource is a script that runs when the EC2 instance is first launched. This script performs the following actions:
 
-- **Login Command:** `determinate-nixd login aws`
-  - Logs into the Determinate Nix daemon using AWS credentials and sets up the environment for further FlakeHub operations.
-- **Apply NixOS Configuration:** `fh apply nixos ${var.flake_reference}`
-  - Uses the FlakeHub client command `fh` to apply a NixOS configuration specified by the `${var.flake_reference}` variable which is defined in the `vars.local.auto.tfvars` file, and points to a specific NixOS flake reference.
+- **Login command:** `determinate-nixd login aws`
+  - Logs into the Determinate Nix daemon using AWS credentials and sets up the environment for further [FlakeHub](https://flakehub.com) operations.
+- **Apply NixOS configuration:** `fh apply nixos ${var.flake_reference}`
+  - Uses the [FlakeHub client](https://github.com/determinatesystems/fh) command `fh` to apply a NixOS configuration specified by the `${var.flake_reference}` variable which is defined in the `vars.local.auto.tfvars` file, and points to a specific NixOS flake reference.
 
 This script ensures that the EC2 instance is configured with the necessary NixOS setup as soon as it starts.
 
-The `user_data` steps in the `main.tf` file simplify the process of authentication and configuration application in the following ways:
+The `user_data` steps in the `main.tf` simplify the process of authentication and applying the system configuration in the following ways:
 
-#### Simplified Authentication
+#### Simple authentication
 
 1. **Using `determinate-nixd login aws`**:
-   - **Automatic Authentication**: The `determinate-nixd login aws` command handles the authentication to the FlakeHub cache and sources using AWS credentials. This command abstracts away the complexity of manually managing and sharing credentials.
+   - **Automatic authentication**: The `determinate-nixd login aws` command handles the authentication to the [FlakeHub](https://flakehub.com) cache and sources using AWS credentials. This command abstracts away the complexity of manually managing and sharing credentials.
    - **Security**: By using this command, sensitive AWS credentials do not need to be explicitly shared or embedded in the deployment target. This reduces the risk of credential leakage and simplifies credential management.
 
 `determinate-nixd` authenticates with FlakeHub using the machines' assumed role.
 The [only requirement is the machine *have a role*, and for FlakeHub to know what that role is](https://learn.determinate.systems/advanced/log-in-with-aws-sts).
 This role grants no privileges until you set `deploy_from_github = true` in `vars.local.auto.tfvars`
 
-#### Simplified Configuration Application
+#### Simplified & faster deployment
 
 2. **Using `fh apply nixos ${var.flake_reference}`**:
    - **Single Command Application**: The `fh apply nixos` command resolves and applies the NixOS configuration in one step. This command fetches the pre-evaluated NixOS closure referenced by `${var.flake_reference}` and applies it to the system.
    - **Efficiency**: Since the closure is pre-evaluated, the command does not need to perform the evaluation and build steps on the deployment target. This reduces the time and computational resources required for deployment.
    - **Consistency**: Applying a pre-evaluated closure ensures that the exact same configuration is deployed every time, leading to consistent and predictable system states.
 
-### Summary
-
-- **Authentication**: The `determinate-nixd login aws` command simplifies authentication by using AWS credentials directly, avoiding the need to manually manage and share S3 credentials.
-- **Configuration Application**: The `fh apply nixos` command resolves and applies the NixOS configuration in one step, leveraging pre-evaluated closures for faster and more consistent deployments.
-
-These steps streamline the deployment process, enhance security, and ensure reliable and efficient application of the NixOS configuration.
-
-## GitHub Actions Workflow
+## GitHub actions workflow
 
 This `.github/workflows/ci.yml` workflow is configured to run on three types of events: `pull_request`, `workflow_dispatch`, and `push` to specific branches (`main` and `master`) or tags matching a version pattern (`v?[0-9]+.[0-9]+.[0-9]+*`).
 
@@ -136,7 +129,7 @@ The `Deploy` step in the GitHub Actions workflow is responsible for deploying th
   - Uses the `aws ssm send-command` command to send a command to instances tagged with `Name=FlakeHubDemo`.
   - Specifies the SSM document name (`FlakeHub-ApplyNixOS`) and passes the `flakeref` parameter, which includes the exact flake reference from the `BuildPublish` job's output.
 
-### Triggering Rollbacks
+### Triggering rollbacks
 
 The `workflow_dispatch` event in GitHub Actions allows you to manually trigger a workflow run. This can be particularly useful for handling rollbacks, as it enables you to execute a predefined set of steps to revert to a previous stable state of your application.
 
