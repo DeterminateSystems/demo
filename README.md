@@ -101,14 +101,14 @@ The [only requirement is the machine *have a role*, and for FlakeHub to know wha
 This role grants no privileges until you set `deploy_from_github = true` in `vars.local.auto.tfvars`
 
 1. **Using `determinate-nixd login aws`**:
-   - **Automatic authentication**: The `determinate-nixd login aws` command handles the authentication to the [FlakeHub](https://flakehub.com) cache and sources using AWS credentials. This command abstracts away the complexity of manually managing and sharing credentials.
-   - **Security**: By using the Determinate Nix daemon, sensitive AWS credentials do not need to be explicitly shared or embedded in the deployment target. This reduces the risk of credential leakage and simplifies credential management.
+   - **Automatic authentication**: The `determinate-nixd login aws` command handles the authentication to the [FlakeHub](https://flakehub.com) cache and sources using AWS credentials, removing the complexity of manually managing and sharing credentials.
+   - **Security**: By using the Determinate Nix daemon, sensitive AWS credentials do not need to be explicitly shared or embedded in the deployment target, reducing the risk of credential leakage and simplifies credential management.
 
 #### Simplified & faster deployment 🚀
 
 2. **Using `fh apply nixos ${var.flake_reference}`**:
-   - **Single command deployment**: The `fh apply nixos` command resolves and applies the NixOS configuration in one step. This command fetches the pre-evaluated NixOS closure referenced by `${var.flake_reference}` and applies it to the system.
-   - **Efficiency**: Since the closure is pre-evaluated, the command does not need to perform the evaluation and build steps on the deployment target. This reduces the time and computational resources required for deployment.
+   - **Single command deployment**: The `fh apply nixos` command resolves and activates the NixOS configuration in one step, it fetches the pre-evaluated NixOS closure referenced by `${var.flake_reference}`.
+   - **Efficiency**: Since the closure is pre-evaluated, the command does not need to perform the evaluation and build steps on the deployment target which significantly reduces the time and computational resources required for deployment.
 
 ## GitHub actions workflow 🐙
 
