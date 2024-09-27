@@ -110,7 +110,6 @@ This role grants no privileges until you set `deploy_from_github = true` in `var
 2. **Using `fh apply nixos ${var.flake_reference}`**:
    - **Single Command Application**: The `fh apply nixos` command resolves and applies the NixOS configuration in one step. This command fetches the pre-evaluated NixOS closure referenced by `${var.flake_reference}` and applies it to the system.
    - **Efficiency**: Since the closure is pre-evaluated, the command does not need to perform the evaluation and build steps on the deployment target. This reduces the time and computational resources required for deployment.
-   - **Consistency**: Applying a pre-evaluated closure ensures that the exact same configuration is deployed every time, leading to consistent and predictable system states.
 
 ## GitHub actions workflow
 
@@ -161,8 +160,5 @@ Applying a fully evaluated NixOS closure via [FlakeHub](https://flakehub.com) di
   - **FlakeHub deployment:** Offloads the computationally intensive tasks of evaluation and building to a more controlled environment (e.g., a CI/CD pipeline), freeing up resources on the target EC2 instance.
   - **Typical Nix deployment:** The target EC2 instance must handle the evaluation and build process, which can be resource-intensive and may require larger instance types or longer deployment times.
 
-### Consistency
- - **FlakeHub deployment:** Ensures that the exact same configuration is deployed every time, as the closure is a fixed, immutable artifact.
- - **Typical Nix deployment:** Variability in the evaluation and build process can lead to slight differences in the deployed configuration, potentially causing inconsistencies.
-
-In summary, applying a fully evaluated NixOS closure from [FlakeHub](https://flakehub.com) during deployments leads to faster, more reliable, and consistent deployments by pre-evaluating and pre-building the NixOS configuration, thus offloading the heavy lifting from the deployment phase to the build phase.
+In summary, applying a fully evaluated NixOS closure from [FlakeHub](https://flakehub.com) during deployments ensures that the exact same configuration is deployed every time, as the closure is a fixed, immutable artifact.
+It also leads to faster, more reliable, and consistent deployments by pre-evaluating and pre-building the NixOS configuration, thus offloading the heavy lifting from the deployment phase to the build phase.
