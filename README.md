@@ -6,7 +6,7 @@ The project demonstrates how to continuously deploy a NixOS configuration to an 
 - **Subsequent deployments take _less than 10 seconds_**
 
 The deployment process involves fetching a pre-built NixOS closure from [FlakeHub](https://flakehub.com) and applying it to the EC2 instance, streamlining the deployment process and ensuring consistency across deployments.
-Amazon Simple Service Management (SSM) agent is used for secure, efficient, and automated deployments, eliminating the need for SSH access and simplifying operations.
+Amazon Simple Systems Manager (SSM) agent is used for secure, efficient, and automated deployments, eliminating the need for SSH access and simplifying operations.
 
 ## Sign-up for the FlakeHub beta
 
@@ -35,9 +35,9 @@ The `flake.nix` sets up a NixOS configuration with specific dependencies and sys
   - `nixosConfigurations.ethercalc-demo`: A NixOS configuration for the system.
   - Includes modules from `nixpkgs` and `determinate`.
   - Defines system packages, including a package from `fh`.
-  - Importantly, **Amazon Simple Service Management (SSM) agent is included**.
+  - Importantly, **Amazon Simple Systems Manager (SSM) agent is included**.
 
-### Amazon Simple Service Management (SSM) Agent
+### Amazon Simple Systems Manager (SSM) agent
 
 Deploying NixOS AMIs using Amazon SSM agent offers several advantages over traditional SSH-based deployments, especially for enterprise environments prioritizing security and automation:
 
@@ -123,7 +123,7 @@ The `Deploy` step in the GitHub Actions workflow is responsible for deploying th
   - Specifies the AWS region (`us-east-2`) and the IAM role to assume (`arn:aws:iam::194722411868:role/github-actions/FlakeHubDeployDemo`).
 
 - **Deploy Ethercalc**:
-  - Runs an AWS Simple Service Manager (SSM) to deploy the application.
+  - Runs an AWS Simple Systems Manager (SSM) to deploy the application.
   - Uses the `aws ssm send-command` to send a command to instances tagged with `Name=FlakeHubDemo`.
   - Specifies the SSM document name (`FlakeHub-ApplyNixOS`) and passes the `flakeref` parameter, which includes the exact flake reference from the `BuildPublish` job's output.
 
@@ -145,7 +145,7 @@ The `workflow_dispatch` event in GitHub Actions allows you to manually trigger a
 Applying a fully evaluated NixOS closure via [FlakeHub](https://flakehub.com) differs from typical deployments using Nix in several key ways, leading to potential improvements in speed and reliability:
 
 ### Security:
-  - **FlakeHub deployment:** Leverages Amazon Systems Manager (SSM) for secure, auditable access without exposing SSH ports. Credentials are managed through IAM roles, eliminating the need for static SSH keys. This approach aligns with zero-trust security models and simplifies compliance in regulated environments.
+  - **FlakeHub deployment:** Leverages AWS Simple Systems Manager (SSM) for secure, auditable access without exposing SSH ports. Credentials are managed through IAM roles, eliminating the need for static SSH keys. This approach aligns with zero-trust security models and simplifies compliance in regulated environments.
   - **Typical Nix deployment:** Often relies on SSH for access, requiring management of SSH keys and potential exposure of ports to the internet. This increases the attack surface and complicates security audits. Key rotation and access control become ongoing operational challenges, especially in large-scale deployments.
 
 ### Deployment speed
