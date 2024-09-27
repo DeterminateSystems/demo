@@ -139,3 +139,29 @@ The `Deploy` step in the GitHub Actions workflow is responsible for deploying th
 ### Triggering Rollbacks
 
 The `workflow_dispatch` event in GitHub Actions allows you to manually trigger a workflow run. This can be particularly useful for handling rollbacks, as it enables you to execute a predefined set of steps to revert to a previous stable state of your application.
+
+## Summary
+
+Applying a fully evaluated NixOS closure via [FlakeHub](https://flakehub.com) differs from typical deployments using Nix in several key ways, leading to potential improvements in speed and reliability:
+
+### Pre-evaluation and pre-build
+  - **FlakeHub deployment:** The NixOS configuration is evaluated and built ahead of time, resulting in a closure that contains all the necessary dependencies and configurations.
+  - **Typical Nix deployment** The evaluation and build process happens during the deployment, which can be time-consuming and error-prone.
+
+### Deployment speed
+  - **FlakeHub deployment:** Since the closure is pre-built, and cached, the deployment process is faster. The EC2 instance only needs to download and apply the pre-built closure, reducing the time spent on evaluation and building.
+  - **Typical Nix deployment:** The instance, or a deployment host, must evaluate the Nix expressions and build the necessary packages during deployment, which can significantly increase the deployment time.
+
+### Reliability
+  - **FlakeHub deployment:** The pre-built closure ensures that the configuration has been tested and verified before deployment. This reduces the risk of runtime errors and inconsistencies.
+  - **Typical Nix deployment:** Errors can occur during the evaluation and build process, leading to potential deployment failures or inconsistencies.
+
+### Resource utilization:
+  - **FlakeHub deployment:** Offloads the computationally intensive tasks of evaluation and building to a more controlled environment (e.g., a CI/CD pipeline), freeing up resources on the target EC2 instance.
+  - **Typical Nix deployment:** The target EC2 instance must handle the evaluation and build process, which can be resource-intensive and may require larger instance types or longer deployment times.
+
+### Consistency
+ - **FlakeHub deployment:** Ensures that the exact same configuration is deployed every time, as the closure is a fixed, immutable artifact.
+ - **Typical Nix deployment:** Variability in the evaluation and build process can lead to slight differences in the deployed configuration, potentially causing inconsistencies.
+
+In summary, applying a fully evaluated NixOS closure from [FlakeHub](https://flakehub.com) during deployments leads to faster, more reliable, and consistent deployments by pre-evaluating and pre-building the NixOS configuration, thus offloading the heavy lifting from the deployment phase to the build phase.
