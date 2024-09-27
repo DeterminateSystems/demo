@@ -129,6 +129,14 @@ The `Deploy` step in the GitHub Actions workflow is responsible for deploying th
   - Uses the `aws ssm send-command` command to send a command to instances tagged with `Name=FlakeHubDemo`.
   - Specifies the SSM document name (`FlakeHub-ApplyNixOS`) and passes the `flakeref` parameter, which includes the exact flake reference from the `BuildPublish` job's output.
 
+### Continuous deployment
+
+The GitHub Actions workflow is configured to run on multiple events, including `push` to specific branches or tags, and `pull_request`.
+This setup enables continuous deployment of the NixOS configuration to the AWS EC2 instance whenever changes are pushed to the repository or a pull request is opened.
+
+Continuous deployments can be demonstrated by toggling the `enable` state of `services.ethercalc` and `services.writefreely` in `flake.nix` and then pushing the changes or submitting a pull request (PR) to GitHub.
+This will trigger the GitHub Actions workflow, which will deploy the changes automatically and the changes will be reflected on the AWS EC2 instance with chosen service listening on port 80.
+
 ### Triggering rollbacks
 
 The `workflow_dispatch` event in GitHub Actions allows you to manually trigger a workflow run. This can be particularly useful for handling rollbacks, as it enables you to execute a predefined set of steps to revert to a previous stable state of your application.
