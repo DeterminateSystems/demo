@@ -144,21 +144,21 @@ The `workflow_dispatch` event in GitHub Actions allows you to manually trigger a
 
 Applying a fully evaluated NixOS closure via [FlakeHub](https://flakehub.com) differs from typical deployments using Nix in several key ways, leading to potential improvements in speed and reliability:
 
-### Pre-evaluation and pre-build
-  - **FlakeHub deployment:** The NixOS configuration is evaluated and built ahead of time, resulting in a closure that contains all the necessary dependencies and configurations.
-  - **Typical Nix deployment** The evaluation and build process happens during the deployment, which can be time-consuming and error-prone.
+### Security:
+  - **FlakeHub deployment:** Leverages Amazon Systems Manager (SSM) for secure, auditable access without exposing SSH ports. Credentials are managed through IAM roles, eliminating the need for static SSH keys. This approach aligns with zero-trust security models and simplifies compliance in regulated environments.
+  - **Typical Nix deployment:** Often relies on SSH for access, requiring management of SSH keys and potential exposure of ports to the internet. This increases the attack surface and complicates security audits. Key rotation and access control become ongoing operational challenges, especially in large-scale deployments.
 
 ### Deployment speed
-  - **FlakeHub deployment:** Since the closure is pre-built, and cached, the deployment process is faster. The EC2 instance only needs to download and apply the pre-built closure, reducing the time spent on evaluation and building.
-  - **Typical Nix deployment:** The instance, or a deployment host, must evaluate the Nix expressions and build the necessary packages during deployment, which can significantly increase the deployment time.
-
-### Reliability
-  - **FlakeHub deployment:** The pre-built closure ensures that the configuration has been tested and verified before deployment. This reduces the risk of runtime errors and inconsistencies.
-  - **Typical Nix deployment:** Errors can occur during the evaluation and build process, leading to potential deployment failures or inconsistencies.
+  - **FlakeHub deployment:** The NixOS configuration is evaluated and built ahead of time. As the closure is pre-built, and cached, the deployment process is faster. The EC2 instance only needs to download and apply the pre-built closure, eradicating the time spent on evaluation and building.
+  - **Typical Nix deployment:** The evaluation and build process happens during the deployment, which can be time-consuming. The instance, or intermediate deployment host, must evaluate the Nix expressions and build the necessary packages during deployment, which can significantly increase the deployment time.
 
 ### Resource utilization:
   - **FlakeHub deployment:** Offloads the computationally intensive tasks of evaluation and building to a more controlled environment (e.g., a CI/CD pipeline), freeing up resources on the target EC2 instance.
-  - **Typical Nix deployment:** The target EC2 instance must handle the evaluation and build process, which can be resource-intensive and may require larger instance types or longer deployment times.
+  - **Typical Nix deployment:** The target EC2 instance must handle the evaluation and build process, which can be resource-intensive and may require larger instance types or longer deployment times. Or the evaluation and build process must be done on a separate host, which adds complexity to the deployment process.
+
+### Scalability for auto-scaled workloads:
+  - **FlakeHub deployment:** The pre-built and cached nature of FlakeHub deployments allows for rapid instance provisioning, making it ideal for auto-scaling scenarios. New instances can quickly download and apply the pre-built configuration, enabling faster scale-out responses to demand spikes.
+  - **Typical Nix deployment:** The time required for evaluation and building on each new instance can introduce significant delays in auto-scaling responsiveness. This lag may result in suboptimal resource utilization during demand fluctuations and could impact application performance during scale-out events.
 
 In summary, applying a fully evaluated NixOS closure from [FlakeHub](https://flakehub.com) during deployments ensures that the exact same configuration is deployed every time, as the closure is a fixed, immutable artifact.
-It also leads to faster, more reliable, and consistent deployments by pre-evaluating and pre-building the NixOS configuration, thus offloading the heavy lifting from the deployment phase to the build phase.
+It also leads to faster deployments (and rollback *when required*) by pre-evaluating and pre-building the NixOS configuration, thus offloading the heavy lifting from the deployment phase to CI/CD.
