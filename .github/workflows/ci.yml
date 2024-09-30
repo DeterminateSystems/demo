@@ -13,10 +13,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  BuildPublish:
+  build-publish:
     runs-on: ubuntu-latest
     outputs:
-      flakeref_exact: ${{ steps.flakehubpush.outputs.flakeref_exact }}
+      flakeref-exact: ${{ steps.flakehub-push.outputs.flakeref-exact }}
     permissions:
       id-token: "write"
       contents: "read"
@@ -25,23 +25,28 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@main
         with:
           flakehub: true
+
       - uses: DeterminateSystems/magic-nix-cache-action@main
         with:
           source-pr: 103
           use-gha-cache: false
-      - run: nix build .#nixosConfigurations.ethercalc-demo.config.system.build.toplevel
-      - uses: "DeterminateSystems/flakehub-push@main"
-        id: flakehubpush
+
+      - name: Build NixOS closure
+        run: |
+          nix build .#nixosConfigurations.ethercalc-demo.config.system.build.toplevel
+
+      - uses: DeterminateSystems/flakehub-push@main
+        id: flakehub-push
         with:
-          name: "DeterminateSystems/demo"
+          name: DeterminateSystems/demo
           rolling: true
           visibility: "private"
           include-output-paths: true
           source-pr: 169
 
-  Deploy:
+  deploy:
     if: github.ref == 'refs/heads/main'
-    needs: BuildPublish
+    needs: build-publish
     runs-on: ubuntu-latest
     permissions:
       id-token: "write"
@@ -52,10 +57,11 @@ jobs:
         with:
           aws-region: us-east-2
           role-to-assume: arn:aws:iam::194722411868:role/github-actions/FlakeHubDeployDemo
+
       - name: Deploy Ethercalc
         run: |
           aws ssm send-command \
-              --region us-east-2 \
-              --targets Key=tag:Name,Values=FlakeHubDemo \
-              --document-name "FlakeHub-ApplyNixOS" \
-              --parameters flakeref="${{ needs.BuildPublish.outputs.flakeref_exact }}#nixosConfigurations.ethercalc-demo"
+            --region us-east-2 \
+            --targets Key=tag:Name,Values=FlakeHubDemo \
+            --document-name "FlakeHub-ApplyNixOS" \
+            --parameters flakeref="${{ needs.build-publish.outputs.flakeref-exact }}#nixosConfigurations.ethercalc-demo"

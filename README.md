@@ -1,23 +1,26 @@
 # Continuous, rapid, NixOS deployments to Amazon Web Services  🚀
 
-The project demonstrates how to continuously deploy a [NixOS] configuration to an [Amazon Web Services (AWS) EC2][ec2] instance using Terraform and [FlakeHub] _in seconds_ ️⏱️
+This project shows you how to continuously deploy a [NixOS] configuration to an Amazon Web Services (AWS) [EC2 instance][ec2] using [Terraform] and [FlakeHub] _in seconds_ ️⏱️
 
 - **The initial deployment completes in _less than 60 seconds_**
 - **Subsequent deployments take _less than 10 seconds_**
 
 The deployment process involves fetching a pre-built NixOS [closure][closures] from [FlakeHub] and applying it to the [EC2] instance, streamlining the deployment process and ensuring consistency across deployments.
-Amazon Systems Manager agent is used for secure, efficient, and automated deployments, eliminating the need for SSH access and simplifying operations.
+[Amazon Systems Manager][asm] agent is used for secure, efficient, and automated deployments, eliminating the need for SSH access and simplifying operations.
+
+> ![TIP]
+> While this
 
 ## ✨ Sign-up for the FlakeHub beta ✨
 
 To experience this streamlined NixOS deployment pipeline for yourself, [**sign up for the FlakeHub beta**][detsys] at https://determinate.systems.
-FlakeHub provides the enterprise-grade Nix infrastructure needed to fully leverage these advanced deployment techniques, ensuring a secure and efficient path from development to production.
+FlakeHub provides the enterprise-grade Nix infrastructure needed to fully use these advanced deployment techniques, ensuring a secure and efficient path from development to production.
 
 ## Introduction
 
 This demonstration project consists of the following key components:
 
-- **Nix Flake configuration**: A Nix flake configuration that defines the NixOS configuration for the deployment target.
+- **Nix [flake][flakes] configuration**: A Nix flake configuration that defines the NixOS configuration for the deployment target.
 - **Terraform configuration**: A Terraform configuration that sets up an AWS EC2 instance and deploys the NixOS configuration using [FlakeHub].
   - **User Data script**: A script that runs on the EC2 instance to authenticate with [FlakeHub] and apply the NixOS configuration.
 - **GitHub Actions workflow**: A GitHub Actions workflow that triggers the deployment process using Terraform and [FlakeHub].
@@ -35,7 +38,7 @@ The [`flake.nix`](./flake.nix) sets up a NixOS configuration with specific depen
   - `nixosConfigurations.ethercalc-demo`: A NixOS configuration for the system.
   - Includes modules from `nixpkgs` and `determinate`.
   - Defines system packages, including a package from `fh`.
-  - Importantly, **Amazon Systems Manager agent is included**.
+  - Importantly, **the Amazon Systems Manager agent is included**.
 
 #### Amazon Systems Manager agent ️🎛️
 
@@ -44,7 +47,7 @@ Deploying NixOS AMIs using Amazon Systems Manager agent offers several advantage
 - **Enhanced security:**
   - No need to expose SSH ports, reducing attack surface
   - Eliminates management of SSH keys
-  - Leverages AWS IAM for access control
+  - Use [AWS IAM][iam] for access control
 - **Improved compliance:**
   - Centralized logging of all actions through AWS CloudTrail
   - Easier to meet regulatory requirements with built-in audit trails
@@ -80,7 +83,7 @@ The `main.tf` file is a Terraform configuration that sets up an AWS EC2 instance
     - Security group ID from `aws_security_group.demo`.
     - Key name from `aws_key_pair.deployer`.
     - Subnet ID from `aws_subnet.main`.
-    - IAM instance profile `flakehub_client_machine`.
+    - [AWS IAM][iam] instance profile `flakehub_client_machine`.
     - User data script for initialization.
 
 #### User Data script ️📜
@@ -120,7 +123,7 @@ The `Deploy` step in the GitHub Actions workflow is responsible for deploying th
 
 - **Configure AWS credentials**:
   - Uses the `aws-actions/configure-aws-credentials@v4` action to configure AWS credentials.
-  - Specifies the AWS region (`us-east-2`) and the IAM role to assume (`arn:aws:iam::194722411868:role/github-actions/FlakeHubDeployDemo`).
+  - Specifies the AWS region (`us-east-2`) and the [IAM] role to assume (`arn:aws:iam::194722411868:role/github-actions/FlakeHubDeployDemo`).
 
 - **Deploy Ethercalc**:
   - Runs an Amazon Systems Manager to deploy the application.
@@ -146,8 +149,11 @@ Applying fully evaluated NixOS closures via [FlakeHub] differs from typical depl
 
 ### Security
 
-- **FlakeHub deployment:** Leverages Amazon Systems Manager for secure, auditable access without exposing SSH ports. Credentials are managed through IAM roles, eliminating the need for static SSH keys. This approach aligns with zero-trust security models and simplifies compliance in regulated environments.
-- **Typical Nix deployment:** Often relies on SSH for access, requiring management of SSH keys and potential exposure of ports to the internet. This increases the attack surface and complicates security audits. Key rotation and access control become ongoing operational challenges, especially in large-scale deployments.
+- **FlakeHub deployment:** Uses [Amazon Systems Manager][asm] for secure, auditable access without exposing SSH ports.
+  Credentials are managed through IAM roles, eliminating the need for static SSH keys.
+  This approach aligns with zero-trust security models and simplifies compliance in regulated environments.
+- **Typical Nix deployment:** Often relies on SSH for access, requiring management of SSH keys and potential exposure of ports to the internet.
+  This increases the attack surface and complicates security audits. Key rotation and access control become ongoing operational challenges, especially in large-scale deployments.
 
 ### Deployment speed
 
@@ -167,10 +173,40 @@ Applying fully evaluated NixOS closures via [FlakeHub] differs from typical depl
 In summary, applying a fully evaluated NixOS closure from [FlakeHub] during deployments ensures that the exact same configuration is deployed every time, as the closure is a fixed, immutable artifact.
 It also leads to faster deployments (and rollback *when required*) by pre-evaluating and pre-building the NixOS configuration, thus offloading the heavy lifting from the deployment phase to CI/CD.
 
+## Running the deployment locally
+
+```shell
+cd setup
+
+tofu init
+
+tofu plan
+
+tofu apply -auto-approve
+
+export FLAKE_REF="$(tofu output --json | jq -r .flake_reference.value).config.system.build.toplevel"
+
+aws ssm send-command \
+  --region us-east-2 \
+  --targets Key=tag:Name,Values=FlakeHubDemo \
+  --document-name "FlakeHub-ApplyNixOS" \
+  --parameters flakeref="${FLAKE_REF}"
+
+export WEBSITE=$(tofu output --json | jq -r .website.value)
+
+open "${WEBSITE}"
+
+tofu destroy -auto-approve
+```
+
+[asm]: https://aws.amazon.com/systems-manager
 [closures]: https://zero-to-nix.com/concepts/closures
 [detsys]: https://determinate.systems
 [ec2]: https://aws.amazon.com/ec2
 [fh]: https://github.com/determinatesystems/fh
 [flakehub]: https://flakehub.com
+[flakes]: https://zero-to-nix.com/concepts/flakes
+[iam]: https://aws.amazon.com/iam
 [nixos]: https://zero-to-nix.com/concepts/nixos
 [sts-doc]: https://learn.determinate.systems/advanced/log-in-with-aws-sts
+[terraform]: https://terraform.io
