@@ -58,6 +58,7 @@
             buildInputs = with pkgs; [
               opentofu
               awscli2
+              jq
             ];
           };
         });
