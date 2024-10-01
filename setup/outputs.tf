@@ -14,3 +14,7 @@ output "flakehub_organization_allow_arn" {
 output "website" {
   value = "http://${aws_instance.demo.public_dns}"
 }
+
+output "flake_reference" {
+  value = var.flake_reference
+}

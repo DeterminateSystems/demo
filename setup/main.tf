@@ -1,4 +1,3 @@
-
 data "aws_ami" "nixos" {
   most_recent = true
   owners      = ["535002876703"]
