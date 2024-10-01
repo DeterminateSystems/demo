@@ -8,15 +8,154 @@ This project shows you how to continuously deploy a [NixOS] configuration to an 
 The deployment process involves fetching a pre-built NixOS [closure][closures] from [FlakeHub] and applying it to the [EC2] instance, streamlining the deployment process and ensuring consistency across deployments.
 [Amazon Systems Manager][asm] agent is used for secure, efficient, and automated deployments, eliminating the need for SSH access and simplifying operations.
 
-> ![TIP]
-> While this
-
 ## ✨ Sign-up for the FlakeHub beta ✨
 
 To experience this streamlined NixOS deployment pipeline for yourself, [**sign up for the FlakeHub beta**][detsys] at https://determinate.systems.
 FlakeHub provides the enterprise-grade Nix infrastructure needed to fully use these advanced deployment techniques, ensuring a secure and efficient path from development to production.
 
-## Introduction
+## Run the demo deployment
+
+[EtherCalc]
+
+You can run this demo either [locally](#run-it-locally) on your machine or on [GitHub Actions](#run-it-in-github-actions).
+
+> [!TIP]
+> For a full rundown of how everything in the demo works, see [What's in the demo](#whats-in-the-demo) below.
+
+### Run it locally
+
+In order to run the demo locally, you'll need an AWS account
+
+```shell
+# Enter the setup directory and initialize your OpenTofu providers
+cd setup
+tofu init
+
+# Validate your Terraform configuration
+tofu validate
+
+# Apply the configuration to create the necessary resources
+tofu apply -auto-approve
+
+# See which types of resources you've created
+cat terraform.tfstate | jq '.resources[].type'
+
+# Set some environment variables from the OpenTofu output
+export ETHERCALC_NIXOS_FLAKE_REF="$(tofu output --json | jq -r .flake_reference.value).config.system.build.toplevel"
+export ETHERCALC_WEBSITE=$(tofu output --json | jq -r .website.value)
+
+# Your EC2 instance has been created but the NixOS configuration hasn't yet been applied
+# This command applies it using the fh CLI tool
+aws ssm send-command \
+  --region us-east-2 \
+  --targets Key=tag:Name,Values=FlakeHubDemo \
+  --document-name "FlakeHub-ApplyNixOS" \
+  --parameters flakeref="${ETHERCALC_NIXOS_FLAKE_REF}"
+
+# Open the website for the ethercalc service running on EC2
+open "${ETHERCALC_WEBSITE}"
+
+# You'll likely need to wait about a minute or so for the site to become available
+
+# When you're done, make sure to destroy your created resources
+tofu destroy -auto-approve
+```
+
+### Run it GitHub Actions
+
+To run the demo in [GitHub Actions][actions], you can copy the [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) file in this repo into one of your own repos.
+
+Here, we'll break down the workflow configuration piece by piece.
+First, some standard setup:
+
+```yaml
+# When to trigger
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - "v?[0-9]+.[0-9]+.[0-9]+*"
+
+# Concurrency config for the Action
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+```
+
+In the first workflow job, build the [EtherCalc] NixOS closure and push it to [FlakeHub Cache][cache]:
+
+```yaml
+jobs:
+  # Build the NixOS configuration for EtherCalc and push it to FlakeHub Cache
+  build-publish:
+    runs-on: ubuntu-latest
+    outputs:
+      flakeref-exact: ${{ steps.flakehub-push.outputs.flakeref-exact }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install Nix
+      - uses: DeterminateSystems/nix-installer-action@main
+        with:
+          flakehub: true
+
+      # Set up FlakeHub Cache using the Magic Nix Cache
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      # Build the closure, which is automatically pushed to FlakeHub Cache
+      - name: Build NixOS closure
+        run: |
+          nix build .#nixosConfigurations.ethercalc-demo.config.system.build.toplevel
+
+      # Publish the flake to FlakeHub
+      - uses: DeterminateSystems/flakehub-push@main
+        id: flakehub-push
+        with:
+          name: DeterminateSystems/demo
+          rolling: true
+          visibility: private
+          include-output-paths: true
+```
+
+Then deploy
+
+```yaml
+jobs:
+  build-publish: # see above
+
+  # Deploy the image to AWS
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build-publish
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: "write"
+      contents: "read"
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-2
+          role-to-assume: arn:aws:iam::194722411868:role/github-actions/FlakeHubDeployDemo
+
+      # Use Amazon Systems Manager to trigger an application of the NixOS configuration
+      - name: Deploy EtherCalc
+        run: |
+          aws ssm send-command \
+            --region us-east-2 \
+            --targets Key=tag:Name,Values=FlakeHubDemo \
+            --document-name "FlakeHub-ApplyNixOS" \
+            --parameters flakeref="${{ needs.build-publish.outputs.flakeref-exact }}#nixosConfigurations.ethercalc-demo"
+```
+
+## What's in the demo
 
 This demonstration project consists of the following key components:
 
@@ -71,7 +210,7 @@ By leveraging Amazon Systems Manager, enterprises can create a more secure, comp
 
 ### Terraform configuration ️⛰️
 
-The `main.tf` file is a Terraform configuration that sets up an AWS EC2 instance with the following components:
+The [`main.tf`](./setup/main.tf) file is a Terraform configuration that sets up an AWS EC2 instance with the following components:
 
 - *Data Source:* `aws_ami.nixos`
   - Fetches the most recent AMI provided by Determinate Systems (535002876703).
@@ -93,15 +232,15 @@ The `user_data` portion in the `aws_instance` resource is a script that runs whe
 - **Login command:** `determinate-nixd login aws`
   - Authenticates the Determinate Nix daemon using AWS credentials and sets up the environment for further [FlakeHub] operations.
 - **Apply NixOS configuration:** `fh apply nixos ${var.flake_reference}`
-  - Uses the [FlakeHub client][fh] command `fh` to apply a NixOS configuration specified by the `${var.flake_reference}` variable which is defined in the `vars.local.auto.tfvars` file, and points to a specific NixOS flake reference.
+  - Uses the [FlakeHub client][fh] command `fh` to apply a NixOS configuration specified by the `${var.flake_reference}` variable which is defined in the [`vars.local.auto.tfvars`](./setup/vars.local.auto.tfvars) file, and points to a specific NixOS flake reference.
 
-The `user_data` steps in the `main.tf` simplify the process of authentication and applying the system configuration in the following ways:
+The `user_data` steps in the [`main.tf`](./setup/main.tf) simplify the process of authentication and applying the system configuration in the following ways:
 
 ##### Simple authentication 🔑
 
 `determinate-nixd` authenticates with FlakeHub using the machines' assumed role.
 The [only requirement is the machine *have a role*, and for FlakeHub to know what that role is][sts-doc].
-This role grants no privileges until you set `deploy_from_github = true` in `vars.local.auto.tfvars`
+This role grants no privileges until you set `deploy_from_github = true` in [`vars.local.auto.tfvars`](./setup/vars.local.auto.tfvars).
 
 1. **Using `determinate-nixd login aws`**:
    - **Automatic authentication**: The `determinate-nixd login aws` command handles the authentication to the [FlakeHub] cache and sources using AWS credentials, removing the complexity of manually managing and sharing credentials.
@@ -173,36 +312,13 @@ Applying fully evaluated NixOS closures via [FlakeHub] differs from typical depl
 In summary, applying a fully evaluated NixOS closure from [FlakeHub] during deployments ensures that the exact same configuration is deployed every time, as the closure is a fixed, immutable artifact.
 It also leads to faster deployments (and rollback *when required*) by pre-evaluating and pre-building the NixOS configuration, thus offloading the heavy lifting from the deployment phase to CI/CD.
 
-## Running the deployment locally
-
-```shell
-cd setup
-
-tofu init
-
-tofu plan
-
-tofu apply -auto-approve
-
-export FLAKE_REF="$(tofu output --json | jq -r .flake_reference.value).config.system.build.toplevel"
-
-aws ssm send-command \
-  --region us-east-2 \
-  --targets Key=tag:Name,Values=FlakeHubDemo \
-  --document-name "FlakeHub-ApplyNixOS" \
-  --parameters flakeref="${FLAKE_REF}"
-
-export WEBSITE=$(tofu output --json | jq -r .website.value)
-
-open "${WEBSITE}"
-
-tofu destroy -auto-approve
-```
-
+[actions]: https://github.com/features/actions
 [asm]: https://aws.amazon.com/systems-manager
+[cache]: https://determinate.systems
 [closures]: https://zero-to-nix.com/concepts/closures
 [detsys]: https://determinate.systems
 [ec2]: https://aws.amazon.com/ec2
+[ethercalc]: https://ethercalc.net
 [fh]: https://github.com/determinatesystems/fh
 [flakehub]: https://flakehub.com
 [flakes]: https://zero-to-nix.com/concepts/flakes
