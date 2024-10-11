@@ -1,4 +1,4 @@
-# Continuous, rapid, NixOS deployments to Amazon Web Services  🚀
+# Continuous, rapid, NixOS deployments to Amazon Web Services 🚀
 
 This project shows you how to continuously deploy a [NixOS] configuration to an Amazon Web Services (AWS) [EC2 instance][ec2] using [Terraform] and [FlakeHub] _in seconds_ ️⏱️
 
