@@ -15,8 +15,7 @@ FlakeHub provides the enterprise-grade Nix infrastructure needed to fully use th
 
 ## Run the demo deployment
 
-[EtherCalc]
-
+In this demo, you'll deploy an instance of [EtherCalc], a web spreadsheet application.
 You can run this demo either [locally](#run-it-locally) on your machine or on [GitHub Actions](#run-it-in-github-actions).
 
 > [!TIP]
