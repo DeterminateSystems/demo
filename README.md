@@ -323,5 +323,5 @@ It also leads to faster deployments (and rollback *when required*) by pre-evalua
 [flakes]: https://zero-to-nix.com/concepts/flakes
 [iam]: https://aws.amazon.com/iam
 [nixos]: https://zero-to-nix.com/concepts/nixos
-[sts-doc]: https://learn.determinate.systems/advanced/log-in-with-aws-sts
+[sts-doc]: https://docs.determinate.systems/guides/log-in-with-aws-sts
 [terraform]: https://terraform.io
