@@ -25,12 +25,10 @@ jobs:
       - uses: actions/checkout@v4
 
       # Install Nix
-      - uses: DeterminateSystems/nix-installer-action@main
-        with:
-          flakehub: true
+      - uses: DeterminateSystems/determinate-nix-action@v3
 
       # Set up FlakeHub Cache using the Magic Nix Cache
-      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: DeterminateSystems/flakehub-cache-action@main
 
       # Build the closure, which is automatically pushed to FlakeHub Cache
       - name: Build NixOS closure
@@ -39,6 +37,7 @@ jobs:
 
       # Publish the flake to FlakeHub
       - uses: DeterminateSystems/flakehub-push@main
+        if: ${{ github.event_name != 'pull_request' }}
         id: flakehub-push
         with:
           name: DeterminateSystems/demo

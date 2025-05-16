@@ -101,12 +101,10 @@ jobs:
       - uses: actions/checkout@v4
 
       # Install Nix
-      - uses: DeterminateSystems/nix-installer-action@main
-        with:
-          flakehub: true
+      - uses: DeterminateSystems/determinate-nix-action@v3
 
       # Set up FlakeHub Cache using the Magic Nix Cache
-      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: DeterminateSystems/flakehub-cache-action@main
 
       # Build the closure, which is automatically pushed to FlakeHub Cache
       - name: Build NixOS closure
@@ -211,9 +209,9 @@ By leveraging Amazon Systems Manager, enterprises can create a more secure, comp
 
 The [`main.tf`](./setup/main.tf) file is a Terraform configuration that sets up an AWS EC2 instance with the following components:
 
-- *Data Source:* `aws_ami.nixos`
+- _Data Source:_ `aws_ami.nixos`
   - Fetches the most recent AMI provided by Determinate Systems (535002876703).
-- *Resource:* `aws_instance.demo`
+- _Resource:_ `aws_instance.demo`
   - Creates an EC2 instance using the fetched AMI.
   - Configures the instance with:
     - Public IP address association.
@@ -238,7 +236,7 @@ The `user_data` steps in the [`main.tf`](./setup/main.tf) simplify the process o
 ##### Simple authentication 🔑
 
 `determinate-nixd` authenticates with FlakeHub using the machines' assumed role.
-The [only requirement is the machine *have a role*, and for FlakeHub to know what that role is][sts-doc].
+The [only requirement is the machine _have a role_, and for FlakeHub to know what that role is][sts-doc].
 This role grants no privileges until you set `deploy_from_github = true` in [`vars.local.auto.tfvars`](./setup/vars.local.auto.tfvars).
 
 1. **Using `determinate-nixd login aws`**:
@@ -255,11 +253,12 @@ This role grants no privileges until you set `deploy_from_github = true` in [`va
 
 This `.github/workflows/ci.yml` workflow is configured to run on three types of events: `pull_request`, `workflow_dispatch`, and `push` to specific branches (`main` and `master`) or tags matching a version pattern (`v?[0-9]+.[0-9]+.[0-9]+*`).
 
-Checks out the repository using `actions/checkout@v4` and installs Nix using `DeterminateSystems/nix-installer-action@main` with `flakehubpush` enabled so the outputs are cached.
+Checks out the repository using `actions/checkout@v4` and installs Nix using `DeterminateSystems/determinate-nix-action@v3` so the outputs are cached.
 
 The `Deploy` step in the GitHub Actions workflow is responsible for deploying the application to AWS. Here's a breakdown of what it does:
 
 - **Configure AWS credentials**:
+
   - Uses the `aws-actions/configure-aws-credentials@v4` action to configure AWS credentials.
   - Specifies the AWS region (`us-east-2`) and the [IAM] role to assume (`arn:aws:iam::194722411868:role/github-actions/FlakeHubDeployDemo`).
 
@@ -309,7 +308,7 @@ Applying fully evaluated NixOS closures via [FlakeHub] differs from typical depl
 - **Typical Nix deployment:** The time required for evaluation and building on each new instance can introduce significant delays in auto-scaling responsiveness. This lag may result in suboptimal resource utilization during demand fluctuations and could impact application performance during scale-out events.
 
 In summary, applying a fully evaluated NixOS closure from [FlakeHub] during deployments ensures that the exact same configuration is deployed every time, as the closure is a fixed, immutable artifact.
-It also leads to faster deployments (and rollback *when required*) by pre-evaluating and pre-building the NixOS configuration, thus offloading the heavy lifting from the deployment phase to CI/CD.
+It also leads to faster deployments (and rollback _when required_) by pre-evaluating and pre-building the NixOS configuration, thus offloading the heavy lifting from the deployment phase to CI/CD.
 
 [actions]: https://github.com/features/actions
 [asm]: https://aws.amazon.com/systems-manager
