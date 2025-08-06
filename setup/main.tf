@@ -4,7 +4,7 @@ data "aws_ami" "nixos" {
 
   filter {
     name   = "name"
-    values = ["determinate/nixos/24.05.*"]
+    values = ["determinate/nixos/epoch-1/24.05.*"]
   }
 
   filter {
