@@ -32,12 +32,12 @@
         };
       };
 
-      vaultwardenModule = {
-        services.vaultwarden = {
+      giteaModule = {
+        services.gitea = {
           enable = true;
-          config = {
-            ROCKET_ADDRESS = "0.0.0.0";
-            ROCKET_PORT = 8080;
+          settings.server = {
+            HTTP_ADDR = "0.0.0.0";
+            HTTP_PORT = 8080;
           };
         };
 
@@ -71,7 +71,10 @@
               }
             )
             {
-              networking.firewall.allowedTCPPorts = [ 80 8080 ];
+              networking.firewall.allowedTCPPorts = [
+                80
+                8080
+              ];
             }
           ]
           ++ modules;
@@ -80,7 +83,7 @@
     {
       nixosConfigurations.base = nixos [ ];
       nixosConfigurations.ethercalc = nixos [ ethercalcModule ];
-      nixosConfigurations.vaultwarden = nixos [ vaultwardenModule ];
+      nixosConfigurations.gitea = nixos [ giteaModule ];
 
       devShells = forAllSystems (
         { system, pkgs, ... }:

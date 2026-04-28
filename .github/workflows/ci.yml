@@ -36,7 +36,7 @@ jobs:
           nix build \
             .#nixosConfigurations.base.config.system.build.toplevel \
             .#nixosConfigurations.ethercalc.config.system.build.toplevel \
-            .#nixosConfigurations.vaultwarden.config.system.build.toplevel
+            .#nixosConfigurations.gitea.config.system.build.toplevel
 
       # Publish the flake to FlakeHub
       - uses: DeterminateSystems/flakehub-push@main
