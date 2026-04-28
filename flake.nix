@@ -1,7 +1,7 @@
 {
   inputs.nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/*";
-  inputs.determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/=0.1.95";
-  inputs.fh.url = "https://flakehub.com/f/DeterminateSystems/fh/=0.1.16";
+  inputs.determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
+  inputs.fh.url = "https://flakehub.com/f/DeterminateSystems/fh/*";
 
   outputs = inputs:
     let
