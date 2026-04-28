@@ -33,7 +33,10 @@ jobs:
       # Build the closure, which is automatically pushed to FlakeHub Cache
       - name: Build NixOS closure
         run: |
-          nix build .#nixosConfigurations.ethercalc-demo.config.system.build.toplevel
+          nix build \
+            .#nixosConfigurations.base.config.system.build.toplevel \
+            .#nixosConfigurations.ethercalc.config.system.build.toplevel \
+            .#nixosConfigurations.vaultwarden.config.system.build.toplevel
 
       # Publish the flake to FlakeHub
       - uses: DeterminateSystems/flakehub-push@main
