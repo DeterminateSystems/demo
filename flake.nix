@@ -33,13 +33,19 @@
       };
 
       vaultwardenModule = {
-        systemd.services.vaultwarden.serviceConfig.AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
         services.vaultwarden = {
           enable = true;
           config = {
             ROCKET_ADDRESS = "0.0.0.0";
-            ROCKET_PORT = 80;
+            ROCKET_PORT = 8080;
           };
+        };
+
+        networking.firewall = {
+          extraCommands = ''
+            iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
+            iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port 8080
+          '';
         };
       };
 
@@ -65,7 +71,7 @@
               }
             )
             {
-              networking.firewall.allowedTCPPorts = [ 80 ];
+              networking.firewall.allowedTCPPorts = [ 80 8080 ];
             }
           ]
           ++ modules;

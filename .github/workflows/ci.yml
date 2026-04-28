@@ -69,4 +69,4 @@ jobs:
             --region us-east-2 \
             --targets Key=tag:Name,Values=FlakeHubDemo \
             --document-name "FlakeHub-ApplyNixOS" \
-            --parameters flakeref="${{ needs.build-publish.outputs.flakeref-exact }}#nixosConfigurations.ethercalc-demo"
+            --parameters flakeref="${{ needs.build-publish.outputs.flakeref-exact }}#nixosConfigurations.base"
